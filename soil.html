@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricultural Soil Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7fafc;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-focus:focus {
+            border-color: #48bb78;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(72, 187, 120, 0.3);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .good { background-color: #48bb78; }
+        .warning { background-color: #ed8936; }
+        .danger { background-color: #e53e3e; }
+        
+        .divider {
+            border-top: 1px dashed #e2e8f0;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container mx-auto p-4 max-w-6xl">
+    <header class="mb-8 p-6 rounded-xl header-gradient text-white">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">Crop-Specific Soil Analysis</h1>
+        <p class="opacity-90">Optimize your soil conditions for maximum crop yield</p>
+    </header>
+
+    <!-- Crop Selection -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6 card-hover">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Select Crop Type</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">Crop Category</label>
+                <select id="cropCategory" class="w-full p-3 border rounded-lg input-focus bg-gray-50">
+                    <option value="field">Field Crops</option>
+                    <option value="vegetable">Vegetables</option>
+                    <option value="fruit">Fruits</option>
+                    <option value="livestock">Livestock Fodder</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">Specific Crop</label>
+                <select id="specificCrop" class="w-full p-3 border rounded-lg input-focus bg-gray-50">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Soil Parameters -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6 card-hover">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Soil Parameters</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">pH Level</label>
+                <input type="number" id="ph" class="w-full p-3 border rounded-lg input-focus bg-gray-50" step="0.1" value="6.5">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">Nitrogen (kg/ha)</label>
+                <input type="number" id="nitrogen" class="w-full p-3 border rounded-lg input-focus bg-gray-50" value="150">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">Phosphorus (kg/ha)</label>
+                <input type="number" id="phosphorus" class="w-full p-3 border rounded-lg input-focus bg-gray-50" value="25">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">Potassium (kg/ha)</label>
+                <input type="number" id="potassium" class="w-full p-3 border rounded-lg input-focus bg-gray-50" value="200">
+            </div>
+        </div>
+        <div class="mt-6 text-center">
+            <button onclick="analyzeSoil()" class="btn-primary text-white px-6 py-3 rounded-lg font-medium text-lg">
+                Analyze Soil Conditions
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+            <div class="flex items-center mb-4">
+                <div class="bg-green-100 p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Soil Requirements & Status</h3>
+            </div>
+            <div id="soilRequirements" class="space-y-4 text-gray-700"></div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+            <div class="flex items-center mb-4">
+                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Fertilizer Recommendations</h3>
+            </div>
+            <div id="recommendations" class="space-y-4 text-gray-700"></div>
+        </div>
+    </div>
+    
+    <footer class="text-center text-gray-500 text-sm py-6">
+        <p>Agricultural Soil Analysis Tool © 2023 | For optimal farming results</p>
+    </footer>
+</div>
+
+<script>
+    const cropData = {
+        field: {
+            wheat: { pH: [6.0, 7.5], N: 120, P: 40, K: 60, fertilizers: ['DAP', 'Urea', 'MOP'] },
+            rice: { pH: [5.0, 6.5], N: 150, P: 50, K: 75, fertilizers: ['Ammonium Sulfate', 'SSP'] },
+            maize: { pH: [5.5, 7.0], N: 130, P: 45, K: 65, fertilizers: ['NPK 10-26-26', 'Urea'] },
+            millet: { pH: [5.0, 6.5], N: 100, P: 30, K: 50, fertilizers: ['SSP', 'MOP'] },
+            cotton: { pH: [5.5, 7.5], N: 150, P: 50, K: 80, fertilizers: ['NPK 20-20-20', 'Zinc Sulfate'] },
+            soybean: { pH: [6.0, 7.0], N: 110, P: 45, K: 65, fertilizers: ['Rhizobium Inoculant', 'SSP'] }
+        },
+        vegetable: {
+            carrot: { pH: [5.5, 7.0], N: 80, P: 50, K: 100, fertilizers: ['Vermicompost', 'NPK 12-32-16'] },
+            radish: { pH: [6.0, 7.0], N: 70, P: 40, K: 90, fertilizers: ['Rock Phosphate', 'Potash'] },
+            cauliflower: { pH: [6.0, 7.0], N: 150, P: 60, K: 120, fertilizers: ['Ammonium Nitrate', 'Boron'] },
+            spinach: { pH: [6.0, 7.5], N: 90, P: 45, K: 75, fertilizers: ['Nitrophos', 'Compost'] },
+            bittergourd: { pH: [5.5, 6.5], N: 100, P: 50, K: 80, fertilizers: ['Fish Meal', 'Wood Ash'] },
+            potato: { pH: [5.0, 6.5], N: 120, P: 60, K: 150, fertilizers: ['Muriate of Potash', 'Bone Meal'] },
+            tomato: { pH: [6.0, 6.8], N: 130, P: 55, K: 110, fertilizers: ['NPK 19-19-19', 'Calcium Nitrate'] }
+        },
+        fruit: {
+            mango: { pH: [5.5, 7.5], N: 100, P: 50, K: 75, fertilizers: ['NPK 6-6-6', 'Zinc Sulfate'] },
+            pomegranate: { pH: [5.5, 7.0], N: 90, P: 45, K: 60, fertilizers: ['Farmyard Manure', 'DAP'] },
+            orange: { pH: [6.0, 7.5], N: 110, P: 55, K: 80, fertilizers: ['Micronutrient Mix', 'Urea'] },
+            pineapple: { pH: [4.5, 6.0], N: 80, P: 40, K: 60, fertilizers: ['Ammonium Sulfate', 'Magnesium'] },
+            apple: { pH: [5.8, 6.5], N: 100, P: 45, K: 70, fertilizers: ['NPK 10-10-10', 'Calcium Nitrate'] },
+            grapes: { pH: [5.5, 6.5], N: 120, P: 50, K: 90, fertilizers: ['NPK 10-15-20', 'Gypsum'] },
+            papaya: { pH: [6.0, 6.5], N: 150, P: 60, K: 100, fertilizers: ['Composted Manure', 'Borax'] }
+        },
+        livestock: {
+            alfalfa: { pH: [6.5, 7.5], N: 150, P: 55, K: 85, fertilizers: ['Nitrogen Fixers', 'Rock Phosphate'] },
+            clover: { pH: [6.0, 7.0], N: 130, P: 45, K: 70, fertilizers: ['Biofertilizers', 'Potash'] },
+            sorghum: { pH: [5.5, 7.5], N: 110, P: 35, K: 60, fertilizers: ['Compost Tea', 'SSP'] },
+            ryegrass: { pH: [6.0, 7.0], N: 140, P: 50, K: 75, fertilizers: ['Ammonium Nitrate', 'Superphosphate'] },
+            berseem: { pH: [6.5, 7.5], N: 160, P: 60, K: 90, fertilizers: ['Vermicompost', 'MOP'] }
+        }
+    };
+
+    // Initialize crop options
+    $(document).ready(function() {
+        updateCropOptions();
+        $('#cropCategory').change(updateCropOptions);
+        analyzeSoil(); // Run initial analysis
+    });
+
+    function updateCropOptions() {
+        const category = $('#cropCategory').val();
+        const crops = Object.keys(cropData[category]);
+        $('#specificCrop').empty().append(crops.map(crop => 
+            `<option value="${crop}">${crop.charAt(0).toUpperCase() + crop.slice(1)}</option>`
+        ));
+        analyzeSoil();
+    }
+
+    function analyzeSoil() {
+        const category = $('#cropCategory').val();
+        const crop = $('#specificCrop').val();
+        const requirements = cropData[category][crop];
+        const soilData = {
+            ph: parseFloat($('#ph').val()),
+            nitrogen: parseInt($('#nitrogen').val()),
+            phosphorus: parseInt($('#phosphorus').val()),
+            potassium: parseInt($('#potassium').val())
+        };
+
+        showSoilRequirements(requirements, soilData);
+        generateRecommendations(soilData, requirements);
+    }
+
+    function getStatusIndicator(value, min, max, reverse = false) {
+        if (reverse) {
+            // For pH where both too high and too low are bad
+            if (value < min || value > max) return 'danger';
+            if (value < min + (max-min)*0.2 || value > max - (max-min)*0.2) return 'warning';
+            return 'good';
+        } else {
+            // For nutrients where higher is generally better (up to a point)
+            if (value < min * 0.7) return 'danger';
+            if (value < min) return 'warning';
+            if (value > min * 1.3) return 'good';
+            return 'good';
+        }
+    }
+
+    function showSoilRequirements(req, soil) {
+        const phStatus = getStatusIndicator(soil.ph, req.pH[0], req.pH[1], true);
+        const nStatus = getStatusIndicator(soil.nitrogen, req.N);
+        const pStatus = getStatusIndicator(soil.phosphorus, req.P);
+        const kStatus = getStatusIndicator(soil.potassium, req.K);
+        
+        const content = `
+            <div class="space-y-4">
+                <div>
+                    <div class="flex items-center mb-1">
+                        <span class="status-indicator ${phStatus}"></span>
+                        <span class="font-medium">pH Level</span>
+                    </div>
+                    <p>Current: ${soil.ph} | Ideal: ${req.pH[0]} - ${req.pH[1]}</p>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div>
+                    <div class="flex items-center mb-1">
+                        <span class="status-indicator ${nStatus}"></span>
+                        <span class="font-medium">Nitrogen (N)</span>
+                    </div>
+                    <p>Current: ${soil.nitrogen} kg/ha | Recommended: ${req.N} kg/ha</p>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div>
+                    <div class="flex items-center mb-1">
+                        <span class="status-indicator ${pStatus}"></span>
+                        <span class="font-medium">Phosphorus (P)</span>
+                    </div>
+                    <p>Current: ${soil.phosphorus} kg/ha | Recommended: ${req.P} kg/ha</p>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div>
+                    <div class="flex items-center mb-1">
+                        <span class="status-indicator ${kStatus}"></span>
+                        <span class="font-medium">Potassium (K)</span>
+                    </div>
+                    <p>Current: ${soil.potassium} kg/ha | Recommended: ${req.K} kg/ha</p>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div>
+                    <p class="font-medium mb-1">Suitable Fertilizers</p>
+                    <div class="flex flex-wrap gap-2">
+                        ${req.fertilizers.map(fert => `<span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">${fert}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#soilRequirements').html(content);
+    }
+
+    function generateRecommendations(soil, req) {
+        let recommendations = '<div class="space-y-4">';
+        
+        // pH Analysis
+        if (soil.ph < req.pH[0]) {
+            recommendations += `
+                <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                    <div class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <div>
+                            <p class="font-medium text-red-800">Soil is too acidic (pH ${soil.ph})</p>
+                            <p class="text-sm text-red-700">Apply agricultural lime at 2-5 tons per hectare to raise pH to optimal range (${req.pH[0]} - ${req.pH[1]})</p>
+                        </div>
+                    </div>
+                </div>`;
+        } else if (soil.ph > req.pH[1]) {
+            recommendations += `
+                <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                    <div class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <div>
+                            <p class="font-medium text-red-800">Soil is too alkaline (pH ${soil.ph})</p>
+                            <p class="text-sm text-red-700">Apply elemental sulfur at 500-1000 kg per hectare to lower pH to optimal range (${req.pH[0]} - ${req.pH[1]})</p>
+                        </div>
+                    </div>
+                </div>`;
+        } else {
+            recommendations += `
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <div>
+                            <p class="font-medium text-green-800">Soil pH is optimal (${soil.ph})</p>
+                            <p class="text-sm text-green-700">Maintain current pH between ${req.pH[0]} and ${req.pH[1]}</p>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // Nutrient Recommendations
+        const nutrientRec = (nutrient, reqValue, current, unit, fertilizers, color) => {
+            const diff = reqValue - current;
+            if (diff > 0) {
+                return `
+                    <div class="bg-${color}-50 p-4 rounded-lg border border-${color}-100">
+                        <div class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-${color}-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <p class="font-medium text-${color}-800">${nutrient} deficiency (${current} ${unit} vs recommended ${reqValue} ${unit})</p>
+                                <p class="text-sm text-${color}-700">Apply ${Math.ceil(diff)} ${unit} of ${nutrient} using ${fertilizers.join(' or ')}</p>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                return `
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <div class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <p class="font-medium text-green-800">${nutrient} level is sufficient (${current} ${unit})</p>
+                                <p class="text-sm text-green-700">No additional ${nutrient} fertilizer needed at this time</p>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+        };
+
+        recommendations += nutrientRec('Nitrogen', req.N, soil.nitrogen, 'kg/ha', 
+            req.fertilizers.filter(f => f.includes('Urea') || f.includes('Nitrogen') || f.includes('Ammonium')), 'blue');
+        recommendations += nutrientRec('Phosphorus', req.P, soil.phosphorus, 'kg/ha', 
+            req.fertilizers.filter(f => f.includes('DAP') || f.includes('Phos') || f.includes('SSP')), 'orange');
+        recommendations += nutrientRec('Potassium', req.K, soil.potassium, 'kg/ha', 
+            req.fertilizers.filter(f => f.includes('MOP') || f.includes('Potash') || f.includes('K')), 'purple');
+
+        recommendations += '</div>';
+        $('#recommendations').html(recommendations);
+    }
+</script>
+</body>
+</html>
